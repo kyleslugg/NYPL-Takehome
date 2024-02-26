@@ -1,0 +1,4 @@
+*.pdf
+*.ipynb
+**/__pycache__/
+.env
