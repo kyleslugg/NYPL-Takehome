@@ -4,4 +4,4 @@
 .env
 _postgis_docker
 *.db
-data/**
+data/nyclion_23d/*
