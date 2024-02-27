@@ -2,3 +2,6 @@
 *.ipynb
 **/__pycache__/
 .env
+_postgis_docker
+*.db
+
