@@ -3,5 +3,5 @@
 **/__pycache__/
 .env
 _postgis_docker
-*.db
+1_*.db
 data/nyclion_23d/*
