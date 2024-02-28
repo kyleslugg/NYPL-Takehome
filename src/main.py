@@ -94,3 +94,4 @@ if __name__ == "__main__":
     extract_socrata()
     transformed_data = transform()
     save_processed_dataset(transformed_data, OUTPUT_PATH, format='sqlite', table_name="points_by_block")
+    print(f"Saved data to {OUTPUT_PATH}")
