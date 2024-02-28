@@ -28,7 +28,7 @@ This specific workflow:
 - Retrieves these datasets, saving them to an intermediary SQLite database
 - Loads into memory (using a `SocrataLoader` helper class) both of the above datasets, alongside supplementary geodata
 - Geolocates each block held for parking in the film permits dataset, and creates a separate entry for each day of filming. (311 cases already contain geographic locations, which are checked for validity)
-- Creates 1,000-foot buffers around locations in both datasets
+- Creates 200-foot buffers around locations in both datasets
 - Using GeoPandas, joins both 311 cases and film permits (by their buffers) to tax blocks
 - Produces counts of 311 cases and film permits by day and tax block
 - Writes the resulting table to a SQLite database for further analysis (found here in `data/points_by_tax_block.db` in the table `points_by_block`)
