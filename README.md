@@ -31,6 +31,6 @@ This specific workflow:
 - Creates 1,000-foot buffers around locations in both datasets
 - Using GeoPandas, joins both 311 cases and film permits (by their buffers) to tax blocks
 - Produces counts of 311 cases and film permits by day and tax block
-- Writes the resulting table to a SQLite database for further analysis
+- Writes the resulting table to a SQLite database for further analysis (found here in `data/points_by_tax_block.db` in the table `points_by_block`)
 
 In the interest of complying with task instructions vis a vis time and level of detail, I have left the comparison of 311 activity among blocks with and without filming activity as an exercise to the reader (at least, for the time being).
