@@ -3,7 +3,6 @@ from constants import PROJECT_ROOT_DIRECTORY, CASE_311_ID, FILM_PERMITS_ID, NYCO
 from socrata_operations import get_socrata, save_socrata, save_processed_dataset, SocrataLoader
 import transformations as tr
 
-
 # Prepare for extraction: define options for Socrata when retrieving generators
 AGENCIES_311 = ['NYPD', 'DOT', 'DSNY']
 EXCLUDED_COMPLAINT_TYPES = ['Encampment', 'Panhandling',
@@ -15,21 +14,14 @@ COLUMNS_PERMITS = ['eventid', 'eventtype', 'startdatetime', 'enddatetime',
 
 START_DATE = '2023-8-1'
 END_DATE = '2023-10-31'
-INTERMEDIARY_DB_PATH = pathlib.Path(
-    PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db')
-INTERSECTION_LOCATIONS = pathlib.Path(
-    PROJECT_ROOT_DIRECTORY, 'data/node_street_pairs.geojson')
-INTERSECTION_MAPPER_PATH = pathlib.Path(
-    PROJECT_ROOT_DIRECTORY, 'data/intersection_mapper.geojson')
-TAX_BLOCK_PATH = pathlib.Path(
-    PROJECT_ROOT_DIRECTORY, 'data/tax_blocks.geojson')
-OUTPUT_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY,
-                           'data/points_by_tax_block.db')
-
+INTERMEDIARY_DB_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db')
+INTERSECTION_LOCATIONS = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/node_street_pairs.geojson')
+INTERSECTION_MAPPER_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/intersection_mapper.geojson')
+TAX_BLOCK_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/tax_blocks.geojson')
+OUTPUT_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY,'data/points_by_tax_block.db')
 
 def extract_socrata(refresh=False):
-
-    # Assume that intermediary DB is completely populated on each run
+    
     # Check to see if intermediary DB exists (or we want to refresh data)
     if refresh or not INTERMEDIARY_DB_PATH.exists():
         print("Retrieving data...")
@@ -61,12 +53,10 @@ def extract_socrata(refresh=False):
 
         # Extract and save
         print("Saving film permits...")
-        save_socrata(film_permits_gen, db_path=pathlib.Path(
-            PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db'), table_name='permits')
+        save_socrata(film_permits_gen, db_path=INTERMEDIARY_DB_PATH, table_name='permits')
 
         print("Saving 311 cases...")
-        save_socrata(cases_311_gen, db_path=pathlib.Path(
-            PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db'), table_name='311')
+        save_socrata(cases_311_gen, db_path=INTERMEDIARY_DB_PATH, table_name='311')
     else:
         print("Intermediary data already present. Moving on to transformation...")
 
@@ -78,15 +68,13 @@ def transform():
     film_permits = tr.load_permits(loader)
 
     # Load supplementary geodata
-    intersection_mapper = tr.load_intersection_mapper(
-        INTERSECTION_MAPPER_PATH, INTERSECTION_LOCATIONS)
+    intersection_mapper = tr.load_intersection_mapper(INTERSECTION_MAPPER_PATH, INTERSECTION_LOCATIONS)
     tax_blocks = tr.load_tax_blocks(TAX_BLOCK_PATH)
     tax_block_ids = ['BORO', 'BLOCK']
     minimal_tax_blocks = tax_blocks[tax_block_ids+['geometry']]
 
     # Fit film permits with location data
-    shooting_days_locations = tr.get_shooting_days_locations(
-        film_permits, intersection_mapper)
+    shooting_days_locations = tr.get_shooting_days_locations(film_permits, intersection_mapper)
 
     # Group 311 cases and film permits by day and tax block
     bbd = tr.tax_block_date_matrix(tax_blocks, tax_block_ids, [
@@ -105,7 +93,6 @@ def transform():
 if __name__ == "__main__":
     extract_socrata()
     transformed_data = transform()
-    save_processed_dataset(transformed_data, OUTPUT_PATH,
-                           format='sqlite', table_name="points_by_block")
+    save_processed_dataset(transformed_data, OUTPUT_PATH, format='sqlite', table_name="points_by_block")
     # Test for exception
     save_processed_dataset(transformed_data, OUTPUT_PATH, None)
