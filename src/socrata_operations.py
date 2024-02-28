@@ -1,4 +1,3 @@
-import logging
 import requests
 import pandas as pd
 import sqlite3 as db
@@ -43,8 +42,7 @@ def get_socrata(base_url, resource_id, api_credentials=None, query_params=None, 
             return
 
         page_offset += page_size
-        logging.info(f"Page offset is now {page_offset}")
-        print(f"Page offset is now {page_offset}")
+        print(f"Page offset is now {page_offset}", end='\r', flush=True)
 
 
 def save_socrata(data, db_path, table_name, preliminary_transform=None):
@@ -55,3 +53,13 @@ def save_socrata(data, db_path, table_name, preliminary_transform=None):
             if preliminary_transform:
                 df = preliminary_transform(df)
             df.to_sql(table_name, conn, if_exists='append')
+
+
+class SocrataLoader:
+    def __init__(self, db_path):
+        self.path = db_path
+
+    def load_dataset(self, tablename):
+        with db.connect(self.path) as conn:
+            df = pd.read_sql_query(f'select * from "{tablename}"', conn)
+        return df

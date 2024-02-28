@@ -1,6 +1,7 @@
 import pathlib
 from constants import PROJECT_ROOT_DIRECTORY, CASE_311_ID, FILM_PERMITS_ID, NYCODP_BASE_URL, APP_CREDENTIALS
-from socrata_operations import get_socrata, save_socrata
+from socrata_operations import get_socrata, save_socrata, SocrataLoader
+import transformations as tr
 
 
 # Prepare for extraction: define options for Socrata when retrieving generators
@@ -16,7 +17,12 @@ START_DATE = '2023-8-1'
 END_DATE = '2023-10-31'
 INTERMEDIARY_DB_PATH = pathlib.Path(
     PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db')
-INTERSECTION_MAPPER_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/intersection_mapper.geojson')
+INTERSECTION_LOCATIONS = pathlib.Path(
+    PROJECT_ROOT_DIRECTORY, 'data/node_street_pairs.geojson')
+INTERSECTION_MAPPER_PATH = pathlib.Path(
+    PROJECT_ROOT_DIRECTORY, 'data/intersection_mapper.geojson')
+TAX_BLOCK_PATH = pathlib.Path(
+    PROJECT_ROOT_DIRECTORY, 'data/tax_blocks.geojson')
 
 
 def extract_socrata(refresh=False):
@@ -24,7 +30,7 @@ def extract_socrata(refresh=False):
     # Assume that intermediary DB is completely populated on each run
     # Check to see if intermediary DB exists (or we want to refresh data)
     if refresh or not INTERMEDIARY_DB_PATH.exists():
-
+        print("Retrieving data...")
         # Try to remove DB, to handle refresh case
         INTERMEDIARY_DB_PATH.unlink(missing_ok=True)
 
@@ -57,12 +63,41 @@ def extract_socrata(refresh=False):
 
         save_socrata(cases_311_gen, db_path=pathlib.Path(
             PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db'), table_name='311')
+    else:
+        print("Intermediary data already present. Moving on to transformation...")
 
-def prepare_intersection_mapper(refresh=False):
-  if refresh or not INTERSECTION_MAPPER_PATH.exists():
 
 def transform():
-    pass
+    # Get Socrata loader and load datasets
+    loader = SocrataLoader(INTERMEDIARY_DB_PATH)
+    cases_311 = tr.load_311(loader)
+    film_permits = tr.load_permits(loader)
+
+    # Load supplementary geodata
+    intersection_mapper = tr.load_intersection_mapper(
+        INTERSECTION_MAPPER_PATH, INTERSECTION_LOCATIONS)
+    tax_blocks = tr.load_tax_blocks(TAX_BLOCK_PATH)
+    tax_block_ids = ['BORO', 'BLOCK']
+    minimal_tax_blocks = tax_blocks[tax_block_ids+['geometry']]
+
+    # Fit film permits with location data
+    shooting_days_locations = tr.get_shooting_days_locations(
+        film_permits, intersection_mapper)
+
+    # Group 311 cases and film permits by day and tax block
+    bbd = tr.tax_block_date_matrix(tax_blocks, tax_block_ids, [
+                                   'boro_cd'], START_DATE, END_DATE, 'date')
+    bbd_permits = tr.points_by_day_tax_block(
+        shooting_days_locations, minimal_tax_blocks, bbd, tax_block_ids, 'date', 'permits')
+    bbd_permits_cases = tr.points_by_day_tax_block(
+        cases_311, minimal_tax_blocks, bbd_permits, tax_block_ids, 'date', 'cases_311')
+
+    # Fill NaN values for permit, case counts with zeroes, and drop null CDs
+    bbd_permits_cases = bbd_permits_cases.dropna(subset=['boro_cd']).fillna(0)
+
+    return bbd_permits_cases
+
 
 if __name__ == "__main__":
-    extract_socrata(refresh=True)
+    extract_socrata()
+    transform()
