@@ -63,7 +63,7 @@ def save_processed_dataset(transformed_data_df: pd.DataFrame, path, format, tabl
             print("No table name provided. Saving under table 'default'...")
             table_name = 'default'
         with db.connect(path) as conn:
-            transformed_data_df.to_sql(table_name, conn, if_exists='overwrite')
+            transformed_data_df.to_sql(table_name, conn, if_exists='replace')
     else:
         raise Exception("Invalid Destination Format!")
 

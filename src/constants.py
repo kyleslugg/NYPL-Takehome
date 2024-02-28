@@ -15,4 +15,4 @@ FILM_PERMITS_ID = 'tg4x-b46p'
 un = os.environ.get('API_KEY')
 pw = os.environ.get('API_SECRET')
 
-APP_CREDENTIALS = {'username': un, 'password': pw} if (un & pw) else None
+APP_CREDENTIALS = {'username': un, 'password': pw} if (un is not None) & (pw is not None) else None

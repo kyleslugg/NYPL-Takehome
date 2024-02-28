@@ -21,7 +21,7 @@ TAX_BLOCK_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY, 'data/tax_blocks.geojson')
 OUTPUT_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY,'data/points_by_tax_block.db')
 
 def extract_socrata(refresh=False):
-    
+
     # Check to see if intermediary DB exists (or we want to refresh data)
     if refresh or not INTERMEDIARY_DB_PATH.exists():
         print("Retrieving data...")
@@ -94,5 +94,3 @@ if __name__ == "__main__":
     extract_socrata()
     transformed_data = transform()
     save_processed_dataset(transformed_data, OUTPUT_PATH, format='sqlite', table_name="points_by_block")
-    # Test for exception
-    save_processed_dataset(transformed_data, OUTPUT_PATH, None)
