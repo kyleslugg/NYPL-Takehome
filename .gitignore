@@ -5,3 +5,4 @@
 _postgis_docker
 1_*.db
 data/nyclion_23d/*
+venv

@@ -34,3 +34,7 @@ This specific workflow:
 - Writes the resulting table to a SQLite database for further analysis (found here in `data/points_by_tax_block.db` in the table `points_by_block`)
 
 In the interest of complying with task instructions vis a vis time and level of detail, I have left the comparison of 311 activity among blocks with and without filming activity as an exercise to the reader (at least, for the time being). Note that, for purposes of completeness, many entries contain zeroes in the `permits` and/or `cases_311` field(s); these would wash out in further aggregation during follow-up analysis.
+
+## Notes
+
+Before running this workflow, ensure that all Python packages specified in `requirements.txt` have been installed. You may also need to install the appropriate GDAL development packages, if they are not present on your system.
