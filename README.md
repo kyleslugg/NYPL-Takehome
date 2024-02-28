@@ -20,7 +20,7 @@ At a high level, the analytical flow is as follows:
 - Retrieve excerpts of both datasets for a specified time window;
 - Using geodata derived from DCP's [LION](https://data.cityofnewyork.us/City-Government/LION/2v4z-66xt) basemap, map the street intersections used on film permits to precise locations;
 - Map both daily 311 complaints and an indicator of daily filming activity onto tax blocks using the ; and
-- Measure deviations from baseline 311 call activity (by blocks and aggregates thereof) at times when filming is active
+- Measure deviations from baseline 311 call activity (by blocks and aggregates thereof) at times when filming is active (after the fact).
 
 This specific workflow:
 
@@ -31,3 +31,6 @@ This specific workflow:
 - Creates 1,000-foot buffers around locations in both datasets
 - Using GeoPandas, joins both 311 cases and film permits (by their buffers) to tax blocks
 - Produces counts of 311 cases and film permits by day and tax block
+- Writes the resulting table to a SQLite database for further analysis
+
+In the interest of complying with task instructions vis a vis time and level of detail, I have left the comparison of 311 activity among blocks with and without filming activity as an exercise to the reader (at least, for the time being).

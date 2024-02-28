@@ -1,6 +1,6 @@
 import pathlib
 from constants import PROJECT_ROOT_DIRECTORY, CASE_311_ID, FILM_PERMITS_ID, NYCODP_BASE_URL, APP_CREDENTIALS
-from socrata_operations import get_socrata, save_socrata, SocrataLoader
+from socrata_operations import get_socrata, save_socrata, save_processed_dataset, SocrataLoader
 import transformations as tr
 
 
@@ -23,6 +23,8 @@ INTERSECTION_MAPPER_PATH = pathlib.Path(
     PROJECT_ROOT_DIRECTORY, 'data/intersection_mapper.geojson')
 TAX_BLOCK_PATH = pathlib.Path(
     PROJECT_ROOT_DIRECTORY, 'data/tax_blocks.geojson')
+OUTPUT_PATH = pathlib.Path(PROJECT_ROOT_DIRECTORY,
+                           'data/points_by_tax_block.db')
 
 
 def extract_socrata(refresh=False):
@@ -58,9 +60,11 @@ def extract_socrata(refresh=False):
                               AND complaint_type NOT in({', '.join(["'"+t+"'" for t in EXCLUDED_COMPLAINT_TYPES])})'''})
 
         # Extract and save
+        print("Saving film permits...")
         save_socrata(film_permits_gen, db_path=pathlib.Path(
             PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db'), table_name='permits')
 
+        print("Saving 311 cases...")
         save_socrata(cases_311_gen, db_path=pathlib.Path(
             PROJECT_ROOT_DIRECTORY, 'data/1_Preliminary_Data.db'), table_name='311')
     else:
@@ -100,4 +104,8 @@ def transform():
 
 if __name__ == "__main__":
     extract_socrata()
-    transform()
+    transformed_data = transform()
+    save_processed_dataset(transformed_data, OUTPUT_PATH,
+                           format='sqlite', table_name="points_by_block")
+    # Test for exception
+    save_processed_dataset(transformed_data, OUTPUT_PATH, None)

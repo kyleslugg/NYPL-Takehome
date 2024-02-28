@@ -55,6 +55,19 @@ def save_socrata(data, db_path, table_name, preliminary_transform=None):
             df.to_sql(table_name, conn, if_exists='append')
 
 
+def save_processed_dataset(transformed_data_df: pd.DataFrame, path, format, table_name=None):
+    if format == 'csv':
+        transformed_data_df.to_csv(path)
+    elif format == 'sqlite':
+        if not table_name:
+            print("No table name provided. Saving under table 'default'...")
+            table_name = 'default'
+        with db.connect(path) as conn:
+            transformed_data_df.to_sql(table_name, conn, if_exists='overwrite')
+    else:
+        raise Exception("Invalid Destination Format!")
+
+
 class SocrataLoader:
     def __init__(self, db_path):
         self.path = db_path
